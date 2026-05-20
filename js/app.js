@@ -1,111 +1,84 @@
-// Configuration des API
-const TOKEN_METEO = "31633472c396141108eca3a1451e45ae4c9156b2951ecf0f4ac2a1282474fe02";
-const URL_METEO = "https://api.meteo-concept.com/api";
+
+const TOKEN_METEO  = "31633472c396141108eca3a1451e45ae4c9156b2951ecf0f4ac2a1282474fe02";
+const URL_METEO    = "https://api.meteo-concept.com/api";
 const URL_COMMUNES = "https://geo.api.gouv.fr/communes";
 
-// Éléments de la page
-const champCodePostal = document.querySelector("#code-postal");
-const choixCommune = document.querySelector("#communeSelect");
-const formulaire = document.querySelector("#cityForm_form");
-const blocMeteo = document.querySelector("#weatherInformation");
-let delaiRecherche;
 
-// Quitte l'affichage météo seul sur mobile
-function revenirRecherche() {
-  document.body.classList.remove("meteo-mobile-visible");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+(() => {
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 70; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2 + 0.5;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--delay:-${Math.random()*4}s;--op:${0.1+Math.random()*0.4};`;
+    container.appendChild(s);
+  }
+})();
+
+
+function switchTab(v) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + v).classList.add('active');
+  document.getElementById('panel-' + v).classList.add('active');
 }
 
-// Affiche un message dans la zone météo
-function afficherMessageMeteo(message, erreur = false) {
-  blocMeteo.innerHTML = `<p class="${erreur ? "errorMessage" : ""}">${message}</p>`;
-  blocMeteo.style.display = "grid";
+
+function updateRange(v) {
+  document.getElementById('days-display').textContent = v;
+  document.getElementById('days-range').style.setProperty('--pct', ((v - 1) / 6 * 100) + '%');
+}
+updateRange(1);
+
+
+function showError(id, msg) {
+  const e = document.getElementById(id);
+  e.textContent = msg;
+  e.classList.add('visible');
 }
 
-// Remplace le contenu de la liste des communes
-function afficherOptionCommune(message) {
-  choixCommune.innerHTML = "";
-  const option = document.createElement("option");
-
-  option.value = "";
-  option.textContent = message;
-  choixCommune.appendChild(option);
+function hideError(id) {
+  document.getElementById(id).classList.remove('visible');
 }
 
-// Crée une petite carte d'information météo
-function creerCarteMeteo(titre, valeur, classe = "") {
-  const carte = document.createElement("div");
-  const sousTitre = document.createElement("h3");
-  const texte = document.createElement("p");
-
-  carte.className = classe ? `carte-meteo ${classe}` : "carte-meteo";
-  sousTitre.textContent = titre;
-  texte.textContent = valeur;
-  carte.append(sousTitre, texte);
-
-  return carte;
+function showResults(id) {
+  document.getElementById(id).classList.add('visible');
 }
 
-// Crée le bouton de retour affiché avec les résultats sur mobile
-function creerBoutonRetour() {
-  const bouton = document.createElement("button");
-
-  bouton.type = "button";
-  bouton.className = "retourButton";
-  bouton.textContent = "Retour";
-  bouton.addEventListener("click", revenirRecherche);
-
-  return bouton;
+function clearResults(id) {
+  const e = document.getElementById(id);
+  e.innerHTML = '';
+  e.classList.remove('visible');
 }
 
-// Transforme le code météo en texte simple
-function nomMeteo(codeMeteo) {
-  if (codeMeteo === 0) return "Soleil";
-  if ([1, 2].includes(codeMeteo)) return "Éclaircies";
-  if ([3, 4, 5].includes(codeMeteo)) return "Nuageux";
-  if ([6, 7].includes(codeMeteo)) return "Brouillard";
-  if ([10, 11, 12, 13, 14, 15, 16, 40, 41, 42, 43, 44, 45, 46, 47, 48, 210, 211, 212].includes(codeMeteo)) return "Pluie";
-  if ([20, 21, 22, 60, 61, 62, 63, 64, 65, 66, 67, 68, 220, 221, 222].includes(codeMeteo)) return "Neige";
-  if ([30, 31, 32, 70, 71, 72, 73, 74, 75, 76, 77, 78, 141, 230, 231, 232].includes(codeMeteo)) return "Pluie et neige";
-  if (codeMeteo >= 100 && codeMeteo <= 142) return "Orage";
-  if (codeMeteo === 235) return "Grêle";
 
-  return "Météo inconnue";
+async function chargerJson(url, options = {}) {
+  const reponse = await fetch(url, options);
+  if (!reponse.ok) throw new Error(`Erreur API ${reponse.status}`);
+  return reponse.json();
 }
 
-// Choisit le fond de page selon la météo
-function themeMeteo(codeMeteo) {
-  if (codeMeteo === 0) return "soleil";
-  if ([1, 2].includes(codeMeteo)) return "eclaircies";
-  if ([3, 4, 5].includes(codeMeteo)) return "nuageux";
-  if ([6, 7].includes(codeMeteo)) return "brouillard";
-  if ([10, 11, 12, 13, 14, 15, 16, 40, 41, 42, 43, 44, 45, 46, 47, 48, 210, 211, 212].includes(codeMeteo)) return "pluie";
-  if ([20, 21, 22, 60, 61, 62, 63, 64, 65, 66, 67, 68, 220, 221, 222].includes(codeMeteo)) return "neige";
-  if ([30, 31, 32, 70, 71, 72, 73, 74, 75, 76, 77, 78, 141, 230, 231, 232].includes(codeMeteo)) return "neige";
-  if (codeMeteo >= 100 && codeMeteo <= 142) return "orage";
-  if (codeMeteo === 235) return "pluie";
-
-  return "soleil";
+async function chargerCommunes(codePostal) {
+  const url = new URL(URL_COMMUNES);
+  url.searchParams.set("codePostal", codePostal);
+  url.searchParams.set("fields", "nom,code,codesPostaux");
+  url.searchParams.set("format", "json");
+  return chargerJson(url);
 }
 
-// Applique le fond météo sur la page
-function changerFondMeteo(codeMeteo) {
-  const themes = ["meteo-soleil", "meteo-eclaircies", "meteo-nuageux", "meteo-brouillard", "meteo-pluie", "meteo-neige", "meteo-orage"];
-
-  document.body.classList.remove(...themes);
-  document.body.classList.add(`meteo-${themeMeteo(codeMeteo)}`);
+async function chargerMeteo(codeInsee) {
+  const url = new URL(`${URL_METEO}/forecast/daily`);
+  url.searchParams.set("token", TOKEN_METEO);
+  url.searchParams.set("insee", codeInsee);
+  return chargerJson(url, { headers: { Accept: "application/json" } });
 }
 
-// Convertit les dates renvoyées par Meteo Concept
+// ── DATES (même correction fuseau que le code de référence) ───────────────
 function lireDateMeteo(dateTexte) {
-  const regexFuseau = /([+-]\d{2})(\d{2})$/;
-  const formatFuseau = "$1:$2";
-  const dateLisible = dateTexte.replace(regexFuseau, formatFuseau);
-
+  const dateLisible = dateTexte.replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
   return new Date(dateLisible);
 }
 
-// Affiche une date en français
 function formaterDate(dateTexte) {
   return new Intl.DateTimeFormat("fr-FR", {
     weekday: "long",
@@ -114,238 +87,221 @@ function formaterDate(dateTexte) {
   }).format(lireDateMeteo(dateTexte));
 }
 
-// Charge une URL et récupère le JSON
-async function chargerJson(url, options = {}) {
-  const reponse = await fetch(url, options);
 
-  if (!reponse.ok) {
-    throw new Error(`Erreur API ${reponse.status}`);
-  }
-
-  return reponse.json();
+function nomMeteo(code) {
+  if (code === 0) return ['Soleil', '☀️'];
+  if ([1, 2].includes(code)) return ['Éclaircies', '🌤️'];
+  if ([3, 4, 5].includes(code)) return ['Nuageux', '☁️'];
+  if ([6, 7].includes(code)) return ['Brouillard', '🌫️'];
+  if ([10, 11, 12, 13, 14, 15, 16, 40, 41, 42, 43, 44, 45, 46, 47, 48, 210, 211, 212].includes(code)) return ['Pluie', '🌧️'];
+  if ([20, 21, 22, 60, 61, 62, 63, 64, 65, 66, 67, 68, 220, 221, 222].includes(code)) return ['Neige', '❄️'];
+  if ([30, 31, 32, 70, 71, 72, 73, 74, 75, 76, 77, 78, 141, 230, 231, 232].includes(code)) return ['Pluie et neige', '🌨️'];
+  if (code >= 100 && code <= 142) return ['Orage', '⛈️'];
+  if (code === 235) return ['Grêle', '⛈️'];
+  return ['Conditions variables', '🌈'];
 }
 
-// Récupère les communes à partir du code postal
-async function chargerCommunes(codePostal) {
-  const url = new URL(URL_COMMUNES);
 
-  url.searchParams.set("codePostal", codePostal);
-  url.searchParams.set("fields", "nom,code,codesPostaux");
-  url.searchParams.set("format", "json");
+function remplirSelect(selectId, communes) {
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = '';
 
-  return chargerJson(url);
-}
-
-// Ajoute les communes dans la liste déroulante
-function afficherCommunes(communes) {
-  afficherOptionCommune("Sélectionnez une commune");
-
-  communes.forEach((commune) => {
-    const option = document.createElement("option");
-
-    option.value = commune.code;
-    option.textContent = commune.nom;
-    choixCommune.appendChild(option);
-  });
-}
-
-// Affiche les données météo dans les cartes
-function afficherMeteo(meteo) {
-  const ville = meteo.city;
-  const prevision = meteo.forecast;
-  const miseAJour = meteo.update;
-
-  changerFondMeteo(prevision.weather);
-  blocMeteo.innerHTML = "";
-  blocMeteo.style.display = "grid";
-
-  blocMeteo.append(
-    creerBoutonRetour(),
-    creerCarteMeteo(`${ville.name} - ${formaterDate(prevision.datetime)}`, nomMeteo(prevision.weather), `carte-principale temps-${themeMeteo(prevision.weather)}`),
-    creerCarteMeteo("Températures", `${prevision.tmin}°C min / ${prevision.tmax}°C max`),
-    creerCarteMeteo("Pluie", `${prevision.probarain}% de risque - ${prevision.rr10} mm prévus`),
-    creerCarteMeteo("Vent", `${prevision.wind10m} km/h moyen - rafales ${prevision.gust10m} km/h`),
-    creerCarteMeteo("Soleil", `${prevision.sun_hours} h d'ensoleillement`),
-    creerCarteMeteo("Mise à jour", lireDateMeteo(miseAJour).toLocaleString("fr-FR"))
-  );
-  document.body.classList.add("meteo-mobile-visible");
-  blocMeteo.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-// Recherche les communes quand le code postal change
-async function chercherCommunes() {
-  const codePostal = champCodePostal.value.trim();
-
-  if (!/^\d{5}$/.test(codePostal)) {
-    afficherOptionCommune("Code postal invalide");
+  if (communes.length === 0) {
+    sel.innerHTML = '<option value="">Aucune commune trouvée</option>';
     return;
   }
 
-  afficherOptionCommune("Chargement...");
-
-  try {
-    const communes = await chargerCommunes(codePostal);
-
-    if (communes.length === 0) {
-      afficherOptionCommune("Aucune commune trouvée");
-      return;
-    }
-
-    afficherCommunes(communes);
-  } catch (erreur) {
-    console.error(erreur);
-    afficherOptionCommune("Erreur de chargement");
+  if (communes.length > 1) {
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = 'Sélectionnez une commune';
+    sel.appendChild(ph);
   }
+
+  communes.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.code;
+    opt.textContent = c.nom;
+    sel.appendChild(opt);
+  });
+
+  if (communes.length === 1) sel.selectedIndex = 0;
 }
 
-// Récupère la météo avec le code INSEE de la commune
-async function chargerMeteo(codeInsee) {
-  const url = new URL(`${URL_METEO}/forecast/daily/0`);
+function ecouterCodePostal(inputId, selectId, errorId) {
+  let delai;
+  document.getElementById(inputId).addEventListener('input', function () {
+    const cp = this.value.replace(/\D/g, '');
+    this.value = cp;
+    clearTimeout(delai);
+    hideError(errorId);
 
-  url.searchParams.set("token", TOKEN_METEO);
-  url.searchParams.set("insee", codeInsee);
+    const sel = document.getElementById(selectId);
+    sel.innerHTML = '<option value="">Entrez un code postal</option>';
 
-  return chargerJson(url, {
-    headers: {
-      Accept: "application/json",
-    },
+    if (!/^\d{5}$/.test(cp)) return;
+
+    sel.innerHTML = '<option value="">Chargement...</option>';
+
+    delai = setTimeout(async () => {
+      try {
+        const communes = await chargerCommunes(cp);
+        remplirSelect(selectId, communes);
+      } catch (err) {
+        sel.innerHTML = '<option value="">Erreur de chargement</option>';
+        showError(errorId, 'Impossible de charger les communes : ' + err.message);
+      }
+    }, 350);
   });
 }
 
-// Lance la recherche météo après validation
-async function validerCommune() {
-  const codeInsee = choixCommune.value;
+// Un seul formulaire partagé pour les deux versions
+ecouterCodePostal('code-postal', 'communeSelect', 'error-v1');
 
+
+async function validerV1() {
+  hideError('error-v1');
+  clearResults('results-v1');
+
+  const codeInsee = document.getElementById('communeSelect').value;
   if (!codeInsee) {
-    afficherMessageMeteo("Sélectionnez une commune avant de valider.", true);
+    showError('error-v1', 'Veuillez saisir un code postal et sélectionner une commune.');
     return;
   }
 
-  afficherMessageMeteo("Chargement de la météo...");
+  const btn = document.getElementById('btn-v1');
+  btn.disabled = true;
+  btn.textContent = 'Chargement…';
 
   try {
-    const meteo = await chargerMeteo(codeInsee);
-    afficherMeteo(meteo);
-  } catch (erreur) {
-    console.error(erreur);
-    afficherMessageMeteo("Impossible de récupérer la météo pour cette commune.", true);
+    const data = await chargerMeteo(codeInsee);
+    const f = data.forecast[0];
+    const city = data.city;
+    const [label, emoji] = nomMeteo(f.weather);
+    const sunH = f.sun_hours ?? f.sunHours ?? '–';
+
+    const zone = document.getElementById('results-v1');
+
+    const bloc = document.createElement('div');
+    bloc.className = 'weather-v1';
+    bloc.innerHTML = `
+      <div class="weather-v1-header">
+        <div>
+          <div class="city-name">${city.name}</div>
+          <div class="weather-date">${formaterDate(f.datetime)} &middot; ${label}</div>
+        </div>
+        <div class="weather-emoji">${emoji}</div>
+      </div>
+      <div class="weather-v1-body">
+        <div class="stat-block">
+          <span class="stat-label">Température min</span>
+          <span class="stat-value temp-min">${f.tmin}<span class="stat-unit">°C</span></span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-label">Température max</span>
+          <span class="stat-value temp-max">${f.tmax}<span class="stat-unit">°C</span></span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-label">Probabilité de pluie</span>
+          <span class="stat-value rain">${f.probarain}<span class="stat-unit">%</span></span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-label">Ensoleillement</span>
+          <span class="stat-value sun">${sunH}<span class="stat-unit">h</span></span>
+        </div>
+      </div>`;
+
+    zone.appendChild(bloc);
+    showResults('results-v1');
+
+  } catch (err) {
+    showError('error-v1', 'Impossible de récupérer la météo : ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Afficher la météo';
   }
 }
 
-// Validation avec la touche Entrée
-formulaire.addEventListener("submit", (event) => {
-  event.preventDefault();
-  validerCommune();
-});
 
-// Recherche automatique après la saisie du code postal
-champCodePostal.addEventListener("input", () => {
-  window.clearTimeout(delaiRecherche);
-  delaiRecherche = window.setTimeout(chercherCommunes, 350);
-});
+async function validerV2() {
+  hideError('error-v2');
+  clearResults('results-v2');
 
-afficherOptionCommune("Entrez un code postal");
-
-// Animation du favicon
-const animationFavicon = (() => {
-  const favicon = document.querySelector('link[rel="icon"]') || document.createElement("link");
-  const zoneDessin = document.createElement("canvas");
-  const contexte = zoneDessin.getContext("2d");
-  const taille = 32;
-
-  zoneDessin.width = taille;
-  zoneDessin.height = taille;
-  favicon.rel = "icon";
-  favicon.type = "image/png";
-
-  if (!favicon.parentNode) {
-    document.head.appendChild(favicon);
+  const codeInsee = document.getElementById('communeSelect').value;
+  if (!codeInsee) {
+    showError('error-v2', 'Veuillez saisir un code postal et sélectionner une commune.');
+    return;
   }
 
-  function effacer() {
-    contexte.clearRect(0, 0, taille, taille);
-  }
+  const nbJours  = parseInt(document.getElementById('days-range').value);
+  const affLat   = document.getElementById('chk-lat').checked;
+  const affLon   = document.getElementById('chk-lon').checked;
+  const affPluie = document.getElementById('chk-rain').checked;
+  const affVent  = document.getElementById('chk-wind').checked;
+  const affDir   = document.getElementById('chk-winddir').checked;
 
-  function dessinerSoleil() {
-    effacer();
+  const btn = document.getElementById('btn-v2');
+  btn.disabled = true;
+  btn.textContent = 'Chargement…';
 
-    contexte.fillStyle = "#ffd45a";
-    contexte.beginPath();
-    contexte.arc(16, 16, 8, 0, Math.PI * 2);
-    contexte.fill();
+  try {
+    const data = await chargerMeteo(codeInsee);
+    const city = data.city;
+    const zone = document.getElementById('results-v2');
+    const grille = document.createElement('div');
+    grille.className = 'cards-grid';
 
-    contexte.strokeStyle = "#ffb428";
-    contexte.lineWidth = 2;
-    contexte.lineCap = "round";
+    data.forecast.slice(0, nbJours).forEach((f, i) => {
+      const [label, emoji] = nomMeteo(f.weather);
+      const sunH = f.sun_hours ?? f.sunHours ?? '–';
 
-    for (let i = 0; i < 8; i += 1) {
-      const angle = (Math.PI * 2 * i) / 8;
-      const debut = 11;
-      const fin = 14;
+      // Informations optionnelles
+      let extrasHTML = '';
+      if (affLat || affLon || affPluie || affVent || affDir) {
+        const lignes = [];
+        if (affLat)   lignes.push(`<div class="wc-extra-row"><span>Latitude</span><span class="wc-extra-val">${city.latitude}°</span></div>`);
+        if (affLon)   lignes.push(`<div class="wc-extra-row"><span>Longitude</span><span class="wc-extra-val">${city.longitude}°</span></div>`);
+        if (affPluie) lignes.push(`<div class="wc-extra-row"><span>Cumul pluie</span><span class="wc-extra-val">${f.rr10 ?? 0} mm</span></div>`);
+        if (affVent)  lignes.push(`<div class="wc-extra-row"><span>Vent moyen</span><span class="wc-extra-val">${f.wind10m ?? '–'} km/h</span></div>`);
+        if (affDir)   lignes.push(`<div class="wc-extra-row"><span>Direction vent</span><span class="wc-extra-val">${f.dirwind10m ?? '–'}°</span></div>`);
+        extrasHTML = `<div class="wc-extras">${lignes.join('')}</div>`;
+      }
 
-      contexte.beginPath();
-      contexte.moveTo(16 + Math.cos(angle) * debut, 16 + Math.sin(angle) * debut);
-      contexte.lineTo(16 + Math.cos(angle) * fin, 16 + Math.sin(angle) * fin);
-      contexte.stroke();
-    }
+      const carte = document.createElement('div');
+      carte.className = 'weather-card';
+      carte.style.animationDelay = `${i * 0.07}s`;
+      carte.innerHTML = `
+        <div class="wc-header">
+          <div class="wc-city">${city.name}</div>
+          <div class="wc-date">${formaterDate(f.datetime)}</div>
+        </div>
+        <div class="wc-body">
+          <div class="wc-icon">${emoji}</div>
+          <div class="wc-label">${label}</div>
+          <div class="wc-temps">
+            <div class="wc-temp">
+              <div class="wc-temp-label">Min</div>
+              <div class="wc-temp-val min">${f.tmin}°</div>
+            </div>
+            <div class="wc-temp">
+              <div class="wc-temp-label">Max</div>
+              <div class="wc-temp-val max">${f.tmax}°</div>
+            </div>
+          </div>
+          <div class="wc-basics"><span>🌧 ${f.probarain}%</span><span>☀️ ${sunH}h</span></div>
+          ${extrasHTML}
+        </div>`;
 
-    return zoneDessin.toDataURL("image/png");
-  }
-
-  function dessinerNuage() {
-    effacer();
-
-    contexte.fillStyle = "#ffffff";
-    contexte.shadowColor = "rgba(25, 88, 135, 0.22)";
-    contexte.shadowBlur = 2;
-    contexte.shadowOffsetY = 1;
-
-    contexte.beginPath();
-    contexte.arc(11, 18, 5, 0, Math.PI * 2);
-    contexte.arc(16, 14, 7, 0, Math.PI * 2);
-    contexte.arc(22, 18, 5, 0, Math.PI * 2);
-    contexte.ellipse(16, 20, 12, 5, 0, 0, Math.PI * 2);
-    contexte.fill();
-
-    contexte.shadowColor = "transparent";
-
-    return zoneDessin.toDataURL("image/png");
-  }
-
-  function dessinerPluie() {
-    effacer();
-
-    contexte.fillStyle = "#ffffff";
-    contexte.beginPath();
-    contexte.arc(11, 13, 5, 0, Math.PI * 2);
-    contexte.arc(16, 10, 7, 0, Math.PI * 2);
-    contexte.arc(22, 13, 5, 0, Math.PI * 2);
-    contexte.ellipse(16, 15, 12, 5, 0, 0, Math.PI * 2);
-    contexte.fill();
-
-    contexte.strokeStyle = "#2f9be7";
-    contexte.lineWidth = 2;
-    contexte.lineCap = "round";
-
-    [[10, 22], [16, 24], [22, 22]].forEach(([x, y]) => {
-      contexte.beginPath();
-      contexte.moveTo(x, y - 4);
-      contexte.lineTo(x - 2, y + 1);
-      contexte.stroke();
+      grille.appendChild(carte);
     });
 
-    return zoneDessin.toDataURL("image/png");
+    zone.appendChild(grille);
+    showResults('results-v2');
+
+  } catch (err) {
+    showError('error-v2', 'Impossible de récupérer la météo : ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Générer les cartes météo';
   }
-
-  const images = [dessinerSoleil(), dessinerNuage(), dessinerPluie()];
-  let imageActuelle = 0;
-
-  function animer() {
-    favicon.href = images[imageActuelle];
-    imageActuelle = (imageActuelle + 1) % images.length;
-  }
-
-  animer();
-
-  return window.setInterval(animer, 850);
-})();
+}
