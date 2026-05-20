@@ -200,7 +200,7 @@ select {
   width: 100%;
   outline: none;
   transition: var(--transition);
-  -webkit-appearance: none;
+  appearance: none;
 }
 
 input[type="text"]:focus,
@@ -217,7 +217,7 @@ select option {
 
 /* ===== RANGE ===== */
 input[type="range"] {
-  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: 4px;
   outline: none;
@@ -291,7 +291,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .checkbox-item input[type="checkbox"] {
-  -webkit-appearance: none;
+  appearance: none;
   width: 16px;
   height: 16px;
   border-radius: 4px;
