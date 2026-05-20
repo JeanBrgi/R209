@@ -1,51 +1,85 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="/INSTANT_WEATHER/images/favicon.ico">
-    <link rel="stylesheet" href="./CSS/style.css" />
-    <!-- <script defer src="./js/weatherCard.js"></script> -->
-    <script defer src="./js/app.js"></script>
-    <title>Instant Weather</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instant Weather</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./CSS/style.css" />
+  <script defer src="./js/app.js"></script>
 </head>
-
 <body>
+
+  <div class="bg-layer"></div>
+  <div class="stars" id="stars"></div>
+
+  <div class="container">
+
     <header>
-        <h1>INSTANT WEATHER</h1>
-        <p>Votre météo en un clic</p>
-        <p>Choisissez votre commune et consultez les prévisions du jour</p>
+      <div class="logo"><span class="logo-icon">⛅</span><h1>Instant Weather</h1></div>
+      <p class="tagline">Prévisions météo pour toutes les communes de France</p>
     </header>
-    <main>
-        <section id="cityForm">
-            <form id="cityForm_form">
-                <div class="champ-formulaire">
-                    <label for="code-postal">Code postal</label>
-                    <input
-                        type="text"
-                        id="code-postal"
-                        name="code-postal"
-                        inputmode="numeric"
-                        maxlength="5"
-                        pattern="[0-9]{5}"
-                        autocomplete="postal-code"
-                        placeholder="Ex : 50440"
-                    />
-                </div>
 
-                <div class="champ-formulaire">
-                    <label for="communeSelect">Commune</label>
-                    <select id="communeSelect" name="commune">
-                        <option value="">Entrez un code postal</option>
-                    </select>
-                </div>
+    <!-- ===== FORMULAIRE PARTAGÉ ===== -->
+    <div class="card">
+      <p class="card-title">🔍 Recherche de commune</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="code-postal">Code postal</label>
+          <input type="text" id="code-postal" placeholder="Ex : 14000" maxlength="5" inputmode="numeric" autocomplete="postal-code" />
+        </div>
+        <div class="form-group">
+          <label for="communeSelect">Commune</label>
+          <select id="communeSelect">
+            <option value="">Entrez un code postal</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
-                <button type="submit" id="validationButton">Valider</button>
-            </form>
-        </section>
-        <section id="weatherInformation">
-            <!-- Ajouter les informations météo ici -->
-        </section>
-    </main>
+    <div class="version-tabs">
+      <button class="tab-btn active" onclick="switchTab('v1')" id="tab-v1">Version de base</button>
+      <button class="tab-btn" onclick="switchTab('v2')" id="tab-v2">Version avancée ✦</button>
+    </div>
+
+    <!-- ===== V1 ===== -->
+    <div class="panel active" id="panel-v1">
+      <div class="error-msg" id="error-v1"></div>
+      <button class="btn-primary" id="btn-v1" onclick="validerV1()">Afficher la météo</button>
+      <div class="results-area" id="results-v1"></div>
+    </div>
+
+    <!-- ===== V2 ===== -->
+    <div class="panel" id="panel-v2">
+      <div class="card">
+        <p class="card-title">📅 Nombre de jours</p>
+        <div class="range-row">
+          <label for="days-range">Jours de prévision</label>
+          <span class="range-value" id="days-display">1</span>
+        </div>
+        <input type="range" id="days-range" min="1" max="7" value="1" step="1" oninput="updateRange(this.value)" />
+        <div class="range-labels"><span>1 jour</span><span>7 jours</span></div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">➕ Informations supplémentaires</p>
+        <div class="checkbox-grid">
+          <label class="checkbox-item"><input type="checkbox" id="chk-lat" /><span>Latitude</span></label>
+          <label class="checkbox-item"><input type="checkbox" id="chk-lon" /><span>Longitude</span></label>
+          <label class="checkbox-item"><input type="checkbox" id="chk-rain" /><span>Cumul pluie (mm)</span></label>
+          <label class="checkbox-item"><input type="checkbox" id="chk-wind" /><span>Vent moyen (km/h)</span></label>
+          <label class="checkbox-item"><input type="checkbox" id="chk-winddir" /><span>Direction vent (°)</span></label>
+        </div>
+      </div>
+
+      <div class="error-msg" id="error-v2"></div>
+      <button class="btn-primary" id="btn-v2" onclick="validerV2()">Générer les cartes météo</button>
+      <div class="results-area" id="results-v2"></div>
+    </div>
+
+  </div>
+
 </body>
+</html>
