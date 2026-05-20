@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/INSTANT_WEATHER/images/favicon.ico">
+    <link rel="stylesheet" href="./CSS/style.css" />
+    <!-- <script defer src="./js/weatherCard.js"></script> -->
+    <script defer src="./js/app.js"></script>
+    <title>Instant Weather</title>
+</head>
+
+<body>
+    <header>
+        <h1>INSTANT WEATHER</h1>
+        <p>Votre météo en un clic</p>
+        <p>Choisissez votre commune et consultez les prévisions du jour</p>
+    </header>
+    <main>
+        <section id="cityForm">
+            <form id="cityForm_form">
+                <div class="champ-formulaire">
+                    <label for="code-postal">Code postal</label>
+                    <input
+                        type="text"
+                        id="code-postal"
+                        name="code-postal"
+                        inputmode="numeric"
+                        maxlength="5"
+                        pattern="[0-9]{5}"
+                        autocomplete="postal-code"
+                        placeholder="Ex : 50440"
+                    />
+                </div>
+
+                <div class="champ-formulaire">
+                    <label for="communeSelect">Commune</label>
+                    <select id="communeSelect" name="commune">
+                        <option value="">Entrez un code postal</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="validationButton">Valider</button>
+            </form>
+        </section>
+        <section id="weatherInformation">
+            <!-- Ajouter les informations météo ici -->
+        </section>
+    </main>
+</body>
