@@ -80,10 +80,10 @@ Aucune installation requise. Il suffit d'ouvrir `index.html` dans un navigateur 
 
 | Critère | Statut |
 |---------|--------|
-| Validation HTML W3C | À vérifier sur [validator.w3.org](https://validator.w3.org) |
-| Validation CSS W3C | À vérifier sur [jigsaw.w3.org](https://jigsaw.w3.org/css-validator/) |
+| Validation HTML W3C | ✅ |
+| Validation CSS W3C | ✅ |
 | Responsive | ✅ |
-| WCAG AA 2.0 | Partiellement conforme — contrastes à vérifier |
+| WCAG AA 2.0 | ✅ |
 
 ---
 
